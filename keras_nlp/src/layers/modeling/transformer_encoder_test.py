@@ -109,3 +109,9 @@ class TransformerEncoderTest(TestCase):
         inputs._keras_mask = mask
         outputs = encoder(inputs)
         self.assertAllEqual(outputs._keras_mask, mask)
+
+    def test_call_returning_attention_scores(self):
+        encoder = TransformerEncoder(intermediate_dim=4, num_heads=2)
+        encoder.build([2, 4, 6])
+        input = random.uniform(shape=[2, 4, 6])
+        outputs, attention_scores = encoder(input, return_attention_scores=True)
