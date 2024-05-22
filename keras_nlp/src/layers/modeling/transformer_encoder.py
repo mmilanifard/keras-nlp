@@ -183,7 +183,12 @@ class TransformerEncoder(keras.layers.Layer):
         self.built = True
 
     def call(
-        self, inputs, padding_mask=None, attention_mask=None, training=None
+        self,
+        inputs,
+        padding_mask=None,
+        attention_mask=None,
+        return_attention_scores=False,
+        training=None,
     ):
         """Forward pass of the TransformerEncoder.
 
@@ -196,6 +201,8 @@ class TransformerEncoder(keras.layers.Layer):
             attention_mask: a boolean Tensor. Customized mask used to mask out
                 certain tokens. `attention_mask` should have shape
                 [batch_size, sequence_length, sequence_length].
+            return_attention_scores: a boolean indicating whether to return
+                attention scores from the the self attention layer.
             training: a boolean indicating whether the layer should behave in
                 training mode or in inference mode.
 
@@ -217,8 +224,11 @@ class TransformerEncoder(keras.layers.Layer):
             query=x,
             value=x,
             attention_mask=self_attention_mask,
+            return_attention_scores=return_attention_scores,
             training=training,
         )
+        if return_attention_scores:
+            x, attention_scores = x
         x = self._self_attention_dropout(x, training=training)
         x = x + residual
         if not self.normalize_first:
@@ -235,6 +245,8 @@ class TransformerEncoder(keras.layers.Layer):
         if not self.normalize_first:
             x = self._feedforward_layer_norm(x)
 
+        if return_attention_scores:
+            return x, attention_scores
         return x
 
     def get_config(self):
